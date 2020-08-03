@@ -4,6 +4,7 @@ import './Pomodoro.css';
 import {
   MorphIcon,
 } from 'react-svg-buttons';
+// import ReactAudioPlayer from 'react-audio-player';
 
 const secondsToMMSS = (seconds) => {
   const date = new Date(0);
@@ -18,8 +19,20 @@ function Pomodoro() {
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerID, setTimerID] = useState(0);
   const [timerState, setTimerState] = useState('Session');
+  const [beep] = useState(new Audio('http://freewavesamples.com/files/Korg-Triton-Slow-Choir-ST-C4.wav'));
 
-  let interval;
+  useEffect(() => {
+    if(timeLeft === 0) {
+      beep.play();
+      if(timerState === 'Session') {
+        setTimerState('Break');
+        setTimeLeft(() => breakLength * 60);
+      } else {
+        setTimerState('Session');
+        setTimeLeft(() => sessionLength * 60);
+      }
+    }
+  }, [timeLeft]);
 
   function playPause() {
     if (!timerRunning) {
@@ -34,15 +47,29 @@ function Pomodoro() {
   }
 
   function reset() {
-    setTimeLeft(1500);
+    setTimeLeft(() => sessionLength * 60);
+    setTimerState('Session');
+    if(timerRunning) {
+      clearInterval(timerID);
+      setTimerRunning(false);
+    }
+    if(!beep.paused) {
+      beep.load();
+    }
   }
 
   function changeBreak(incrOrDecr) {
     if (!timerRunning) {
-      if (incrOrDecr == 'decrement' && breakLength > 1) {
-        setBreakLength((breakLength) => breakLength - 1);
+      if (incrOrDecr === 'decrement' && breakLength > 1) {
+        setBreakLength(() => breakLength - 1);
+        if (timerState === 'Break') {
+          setTimeLeft(() => (breakLength - 1) * 60);
+        }
       } else if (incrOrDecr === 'increment' && breakLength < 60) {
-        setBreakLength((breakLength) => breakLength + 1);
+        setBreakLength(() => breakLength + 1);
+        if (timerState === 'Break') {
+          setTimeLeft(() => (breakLength + 1) * 60);
+        }
       }
     }
   }
@@ -50,9 +77,20 @@ function Pomodoro() {
   function changeSession(incrOrDecr) {
     if (!timerRunning) {
       if (incrOrDecr === 'decrement' && sessionLength > 1) {
-        setSessionLength((sessionLength) => sessionLength - 1);
+        setSessionLength(() => sessionLength - 1);
+        if (timerState === 'Session') {
+          setTimeLeft(() => (sessionLength - 1) * 60);
+        }
+
       } else if (incrOrDecr === 'increment' && sessionLength < 60) {
-        setSessionLength((sessionLength) => sessionLength + 1);
+        setSessionLength(() => sessionLength + 1);
+        if (timerState === 'Session') {
+          if (sessionLength === 59) {
+            setTimeLeft(3599);
+          } else {
+            setTimeLeft(() => (sessionLength + 1) * 60);
+          }
+        }
       }
     }
   }

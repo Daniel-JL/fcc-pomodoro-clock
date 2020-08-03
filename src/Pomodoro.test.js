@@ -205,7 +205,7 @@ describe('Start/stop button', () => {
 
 describe('Timer', () => {
   test('When a session timer ends (00:00) a break timer should begin and show string that break has begun. When the break timer ends a session timer should begin and show string that session has begun', () => {
-    const { getByTestId, rerender } = render(
+    const { getByTestId } = render(
       <Pomodoro />,
     );
     const startStopButton = getByTestId('start_stop');
@@ -216,34 +216,18 @@ describe('Timer', () => {
       fireEvent.click(startStopButton);
     });
     expect(timeLeft.textContent).toBe('25:00');
+
     act(() => {
       jest.advanceTimersByTime(1500000);
     });
-    expect(timeLeft.textContent).toBe('00:00');
-
-    rerender(<Pomodoro />);
+    expect(timeLeft.textContent).toBe('05:00');
     expect(timerLabel.textContent).toBe('Break');
 
     act(() => {
       jest.advanceTimersByTime(300000);
     });
-    expect(timeLeft.textContent).toBe('00:00');
-
-    rerender(<Pomodoro />);
+    expect(timeLeft.textContent).toBe('25:00');
     expect(timerLabel.textContent).toBe('Session');
 
   });
-
-  test('When a countdown reaches 00:00 a HTML5 audio tag should be utilised to make a beep noise', () => {
-  
-  });
-
-  test('The beep noise must be 1 second or longer', () => {
-
-  });
-  
-  test('The beep audio element must stop playing and be rewound to the beginning when "reset" is clicked', () => {
-  
-  });
 });
-
