@@ -22,27 +22,28 @@ function Pomodoro() {
   const [beep] = useState(new Audio('http://freewavesamples.com/files/Korg-Triton-Slow-Choir-ST-C4.wav'));
 
   useEffect(() => {
-    if(timeLeft === 0) {
-      beep.play();
-      if(timerState === 'Session') {
-        setTimerState('Break');
-        setTimeLeft(() => breakLength * 60);
-      } else {
-        setTimerState('Session');
-        setTimeLeft(() => sessionLength * 60);
+    let mounted = true;
+    if(mounted) {
+      if(timeLeft === 0) {
+        beep.play();
+        if(timerState === 'Session') {
+          setTimerState('Break');
+          setTimeLeft(() => breakLength * 60);
+        } else {
+          setTimerState('Session');
+          setTimeLeft(() => sessionLength * 60);
+        }
       }
     }
+
+    return () => {mounted = false};
   }, [timeLeft]);
 
   function playPause() {
     if (!timerRunning) {
-      setTimerID(setInterval(() => {
-        setTimeLeft((timeLeft) => timeLeft - 1);
-      }, 1000));
-      setTimerRunning(true);
+      startTimer();
     } else {
-      clearInterval(timerID);
-      setTimerRunning(false);
+      pauseTimer();
     }
   }
 
@@ -50,12 +51,23 @@ function Pomodoro() {
     setTimeLeft(() => sessionLength * 60);
     setTimerState('Session');
     if(timerRunning) {
-      clearInterval(timerID);
-      setTimerRunning(false);
+      pauseTimer();
     }
     if(!beep.paused) {
       beep.load();
     }
+  }
+
+  function startTimer() {
+    setTimerID(setInterval(() => {
+      setTimeLeft((timeLeft) => timeLeft - 1);
+    }, 1000));
+    setTimerRunning(true);
+  }
+
+  function pauseTimer() {
+    clearInterval(timerID);
+    setTimerRunning(false);
   }
 
   function changeBreak(incrOrDecr) {
